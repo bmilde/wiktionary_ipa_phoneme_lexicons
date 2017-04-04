@@ -6,8 +6,6 @@ import argparse
 import re
 from collections import defaultdict
 
-#      <text xml:space="preserve">== Distributionsklasse ({{Sprache|Deutsch}}) ==
-
 # words containing these strings are ignored
 wordfilter = ['{','}','[',']','PAGENAME','&lt','&gt','&amp','|','/',' ',':', '*']
 
@@ -30,8 +28,8 @@ def process(wikifile, gen_testset, do_remove_stress, lang):
                 if line[-1] == '\n':
                     line = line[:-1]
                 line = line.strip()
-                #match = re.match('\<text xml:space="preserve"\>== (.*) \(\{\{Sprache\|Deutsch\}\}\) ==', line.strip())
-                
+               
+                # start segment for the dictionary entry
                 if lang == 'de':
                     match = re.match('.*==(.*)\(\{\{Sprache\|Deutsch\}\}\) ==', line.strip())
                 elif lang == 'en':
@@ -49,57 +47,36 @@ def process(wikifile, gen_testset, do_remove_stress, lang):
                             print(word)
                         if len(word) > 1 and not word[-1]=='-' and not word[0]=='-':
                             word_cleaned = clean_word(word)
-                            #print line
-                            #print word_cleaned
                             found_word=True
 
+                # regex to identify IPA entry
                 if lang=='de':
                     match = re.match('^\:\{\{IPA\}\}.{1,3}\{\{Lautschrift\|([^\}]+)\}\}.*',  line.strip())
                 elif lang=='en':
-                    #* {{a|US}} {{IPA|/ə.bɹʌpt/|/aˈbɹʌpt/|lang=en}}
-                    #match = re.match('^\* {0,4}\{\{a\|US\}\} {0,4}\{\{IPA.{0,4}\|\/?([^\/\}\|]+)\/?\||\}.*',  line.strip())
-                    #match = re.match('^\* {0,4}(?:\{\{a\|([^\/\}\|]+)\}\})? {0,4}\{\{IPA.{0,4}\|\/?([^\/\}\|]+)\/?\||\}.*', line.strip())
+                    #entries are various of this line: * {{a|US}} {{IPA|/ə.bɹʌpt/|/aˈbɹʌpt/|lang=en}}
                     match = None
                     if 'lang=en' in line and 'IPA' in line and not 'RP' in line and not 'UK' in line:
                         match = re.match('[^\/]*\/([^\/]*)\/[^\/]*', line.strip())
 
                 if found_word and match:
-                    #if lang=='en' and not found_english:
-                    #    continue
                     phonemes = match.group(1)
-                    #phonemes = None
-                    #if lang=='de':
-                    #    phonemes = match.group(1)
-                    #elif lang=='en':
-                    #    lang_count[match.group(1)] += 1
-                    #    if match.group(1) is None or match.group(1) in ['US','GenAM','USA']: # US dialect.For UK: UK or RP (Received Pronunciation).
-                    #        phonemes = match.group(2)
-                    #        if len(word) > 20:
-                    #            print match.group(2)
-                    #print phonemes
+                    # we identified the word for entry and could parse the phoneme entry:
                     if phonemes is not None and found_word: 
                         if (not u'…' in phonemes) and (not '...' in phonemes):
                             if remove_stress:
                                 phonemes = remove_stress(phonemes)
                             phonemes = phonemes.replace(' ','').replace('.','').replace('(','').replace(')','').replace('[','').replace(']','')
-                            #if word == 'du':
-                            #    print line
-                            #    print phonemes
                             wiki_out.write(word_cleaned+u' '+u' '.join(phonemes)+'\n')
                             written_out += 1
                             if (written_out%1000 == 0):
                                 print('written: ', written_out, 'entries.')
-                        #found_word=False
-                        #found_english=False
+                # If we see this somewhere in our input, we are already past the phoneme entry
                 if '=See also=' in line or '=Translations=' in line or '</page>' in line or '{{Beispiele}}' in line or '{{Referenzen}}' in line or '{{Quellen}}' in line:
                     found_word=False
                     found_english=False
 
-#    print('lang count')
-#    print(lang_count)
-
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Process a wiktionary dictionary in xml format and make a text ipa lexicon.')
+    parser = argparse.ArgumentParser(description='Process a wiktionary dictionary in xml format and make a text ipa lexicon. Currently for German and English wiktionary XMLs.')
     parser.add_argument('-f', '--file', dest='file', help='process this xml wiktionary lexicon file', type=str, default='../data/dewiktionary-20170120-pages-articles-multistream.xml')
     parser.add_argument('-o', '--outfile', dest='outfile', help='lexicon out file', type=str, default='de_ipa_lexicon.txt')
     parser.add_argument('-t', '--gen-testset', dest='gen_testset', help='generate a testset', action='store_true', default=False)
