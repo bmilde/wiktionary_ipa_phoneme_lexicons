@@ -9,6 +9,6 @@ e.g. to get a German ipa lexicon from Wiktionary for ASR training, with removed 
     cd wiktionary_ipa_phoneme_lexicons
     wget https://dumps.wikimedia.org/dewiktionary/latest/dewiktionary-latest-pages-articles-multistream.xml.bz2
     bunzip2 dewiktionary-latest-pages-articles-multistream.xml.bz2
-    python3 make_lex.py -f -o de_ipa_lexicon.txt --remove-stress
+    python3 make_lex.py -f dewiktionary-latest-pages-articles-multistream.xml -o de_ipa_lexicon.txt --remove-stress
 
 The generated German phoneme lexicon should now be in de_ipa_lexicon.txt
