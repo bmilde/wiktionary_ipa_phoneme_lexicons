@@ -18,11 +18,11 @@ def clean_word(word):
 def remove_stress(phonemes):
     return phonemes.replace(u'ˈ','').replace(u'ˌ','')
 
-def process(wikifile, gen_testset, do_remove_stress, lang):
+def process(wikifile, outfile, gen_testset, do_remove_stress, lang):
     lang_count = defaultdict(int)
     written_out = 0
     with io.open(wikifile,'r',encoding='utf-8') as wiki_in:
-        with io.open(wikifile+'.lex','w',encoding='utf-8') as wiki_out:
+        with io.open(outfile,'w',encoding='utf-8') as wiki_out:
             found_word=False
             for line in wiki_in:
                 if line[-1] == '\n':
@@ -77,10 +77,10 @@ def process(wikifile, gen_testset, do_remove_stress, lang):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Process a wiktionary dictionary in xml format and make a text ipa lexicon. Currently for German and English wiktionary XMLs.')
-    parser.add_argument('-f', '--file', dest='file', help='process this xml wiktionary lexicon file', type=str, default='../data/dewiktionary-20170120-pages-articles-multistream.xml')
+    parser.add_argument('-f', '--file', dest='file', help='process this xml wiktionary lexicon file', type=str, default='dewiktionary-latest-pages-articles-multistream.xml')
     parser.add_argument('-o', '--outfile', dest='outfile', help='lexicon out file', type=str, default='de_ipa_lexicon.txt')
     parser.add_argument('-t', '--gen-testset', dest='gen_testset', help='generate a testset', action='store_true', default=False)
     parser.add_argument('-r', '--remove-stress', dest='remove_stress', help='remove stress markers',  action='store_true', default=False)
     parser.add_argument('-l', '--lang', dest='lang', help='language specific parsing', default = 'de')
     args = parser.parse_args()
-    process(args.file, args.gen_testset, args.remove_stress, args.lang)
+    process(args.file, args.outfile, args.gen_testset, args.remove_stress, args.lang)
